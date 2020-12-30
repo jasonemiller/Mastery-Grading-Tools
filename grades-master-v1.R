@@ -55,6 +55,5 @@ source("./grades-engine-v1.R", echo=TRUE)
 create.gradereports(studentlist)
 
 # --- CUSTOM REPORT SETS ---
-# section 2
 create.gradereports(c("bob","scratchy"))
 
