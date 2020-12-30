@@ -117,3 +117,7 @@ Above, the variable `studentlist` is a character vector of all student names (or
 # --- CUSTOM REPORT SETS ---
 create.gradereports(c("bob","scratchy"))
 ```
+
+This README closes with an example of the plot that shows a student's progress toward mastery; the horizontal dashed lines represent cutoffs at the letter grades.
+
+![progress plot](example-progressplot.png)
