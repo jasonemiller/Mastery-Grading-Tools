@@ -16,3 +16,27 @@ These scripts do the following:
 
 This implementation of mastery grading uses three evaluation categories: satisfactory evidence of mastery (S), insufficient evidence of mastery (I), and no evidence of mastery (N).  A fourth evaluation, excellent evidence of mastery (E), is used but treated like an 'S' in the scripts.  (This is a bug, not a feature.)
 
+## CSV of Grades
+
+The CSV file has a very simple structure.  The first 11 rows of the sample file are shown here.  Note that the first four rows re commented out, and the R command that reads this file is set to recognize that.
+
+```text
+% date:  mmdd
+% assID: short code representing an action (F1a, tkn)
+% lname:  student last name or last name + initial; must be a unique ID
+% grade: grade earned on assessment, or token increment
+date,assID,lname,grade
+1008,L2a,simpson,S
+0903,F1a,simpson,I
+0915,F2a1,simpson,I
+0916,L1a,simpson,S
+1023,D1a,simpson,I
+```
+
+The command in `grades-master-v1.R` that reads the grades in from this CSV file is
+
+```R
+dg <- read_csv("grades-sample.csv",comment="%")
+```
+
+Note the argument `comment="%"` tells the script to ignore the first four lines of the grade CSV.
