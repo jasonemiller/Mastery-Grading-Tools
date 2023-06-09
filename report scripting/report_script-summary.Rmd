@@ -1,0 +1,51 @@
+---
+title: "Calculus I Grade Report for All Students"
+author: "Jason E. Miller, Ph.D."
+graphics: yes
+output: 
+  tufte::tufte_handout:
+    keep_tex: true
+    keep_md: true
+header-includes:
+   - \usepackage{rotating, booktabs, xcolor}
+date: "`r Sys.Date()`"
+
+
+# from https://www.reed.edu/data-at-reed/software/R/markdown_multiple_reports.html
+# render with console command:  rmarkdown::render("report_script.Rmd")
+---
+
+```{r, echo=FALSE}
+suppressWarnings(suppressPackageStartupMessages(library(dplyr)))
+#suppressWarnings(suppressPackageStartupMessages(library(leaflet)))
+suppressWarnings(suppressPackageStartupMessages(library(DT)))
+suppressWarnings(suppressPackageStartupMessages(library(stringr)))
+library(knitr)
+library(markdown)
+library(rmarkdown)
+```
+
+
+```{r table, echo=FALSE,R.options=knitr::opts_chunk$set(warning=FALSE, message=FALSE)}
+
+#student<-"Pydde"
+# 'student' is passed from an R script
+# here we find the index (which we name 'stuno', student number) in the mastery table that corresponds to this student
+reporttable<-t(counts)
+
+# need to select the column according to the 'student' passed to this script
+t1<-kable(reporttable,row.names=TRUE, format = "latex", booktabs = TRUE)
+
+```
+
+
+\begin{table}[!htb]
+      \centering
+        {`r t1`}
+\end{table}
+
+\noindent If you received this report in error, please delete it and notify Dr. Miller by email\footnote{\texttt{jason.miller@csuci.edu}} of the error.
+
+
+
+

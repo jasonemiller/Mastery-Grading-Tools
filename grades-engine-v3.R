@@ -3,6 +3,7 @@
 # a user should not have to interact with this file at all
 # this file is called by grades-master.R which passes parameter values
 
+# v3: revisions on 24 May 2023
 # ---------------------------------
 # Required libraries
 
@@ -15,7 +16,7 @@ library(ggthemes)
 library(reshape2)
 library(xtable)
 
-library(leaflet)
+#library(leaflet)
 library(DT)
 library(stringr)
 library(knitr)
@@ -76,7 +77,7 @@ create.gradereports<-function(x){
     #                   output_file =  paste("report_", student, '_', Sys.Date(), ".pdf", sep=''), 
     #                   output_dir = '/Users/majerus/Desktop/R/auto_reporting/test/reports')
     # for PDF reports  
-    rmarkdown::render(input = "./report scripting - F20/report_script.Rmd",
+    rmarkdown::render(input = "./report scripting - Sp23/report_script.Rmd",
     #rmarkdown::render(input = "/Users/jason.miller/Dropbox (CSUCI)/TEACH - Present/_Fall 2020/M150-Fall2020/MATH 150/grades - F20/report scripting - F20/report_script.Rmd",
     #rmarkdown::render(input = "/Users/millerj/Dropbox (CSUCI)/TEACH - Present/_Spring 2020/MATH 150/grades/report scripting/report_script.Rmd", 
     #rmarkdown::render(input = "/Users/millerj/Dropbox (CSUCI)/TEACH - Present/_Spring 2020/MATH 150/grades/report scripting/Untitled.Rmd", 
@@ -84,6 +85,23 @@ create.gradereports<-function(x){
               output_file = paste("grade-report-", student, Sys.Date(), ".pdf", sep=''),
               output_dir = MG_output_dir)
   }
+}
+
+
+# creates report for the entire class
+create.classreport<-function(x){
+    # for HTML reports
+    # rmarkdown::render('/Users/majerus/Desktop/R/auto_reporting/test/r_script.Rmd',  # file 2
+    #                   output_file =  paste("report_", student, '_', Sys.Date(), ".pdf", sep=''), 
+    #                   output_dir = '/Users/majerus/Desktop/R/auto_reporting/test/reports')
+    # for PDF reports  
+    rmarkdown::render(input = "./report scripting - Sp23/report_script-summary.Rmd",
+                      #rmarkdown::render(input = "/Users/jason.miller/Dropbox (CSUCI)/TEACH - Present/_Fall 2020/M150-Fall2020/MATH 150/grades - F20/report scripting - F20/report_script.Rmd",
+                      #rmarkdown::render(input = "/Users/millerj/Dropbox (CSUCI)/TEACH - Present/_Spring 2020/MATH 150/grades/report scripting/report_script.Rmd", 
+                      #rmarkdown::render(input = "/Users/millerj/Dropbox (CSUCI)/TEACH - Present/_Spring 2020/MATH 150/grades/report scripting/Untitled.Rmd", 
+                      output_format = "pdf_document",
+                      output_file = paste("grade-report-ALL-", Sys.Date(), ".pdf", sep=''),
+                      output_dir = MG_output_dir)
 }
 
 # creates a plot that shows a student's progress over time against the progress of their classmates
@@ -104,10 +122,10 @@ progress.plot<-function(x){
     theme(plot.title = element_text(hjust = 0.5)) + # centers title
     theme(legend.position="top") +
     theme(axis.text.x = element_text(angle = 90))+
-    geom_hline(yintercept=21, linetype="dashed", color = "grey") +
-    geom_hline(yintercept=15, linetype="dashed", color = "grey") +
-    geom_hline(yintercept=10, linetype="dashed", color = "grey") +
-    geom_hline(yintercept=6, linetype="dashed", color = "grey")
+    geom_hline(yintercept=gradecutoffs["A"], linetype="dashed", color = "green") +
+    geom_hline(yintercept=gradecutoffs["B"], linetype="dashed", color = "blue") +
+    geom_hline(yintercept=gradecutoffs["C"], linetype="dashed", color = "orange") +
+    geom_hline(yintercept=gradecutoffs["D"], linetype="dashed", color = "red")
   time<-format(Sys.time(), "%Y%m%d%H%M%S")
   output_plot = paste("progress-plot-", x, time, ".png", sep='')
   ggsave(output_plot)
@@ -164,19 +182,38 @@ single.plot<-function(x){
 }
 
 # assign grade according to cutoffs Spring 2020 M150
-# grade.cutoffs<-c(18,15,12,9)
+# grade.cutoffs<-c(35,27,20,11)
 # plan to use the above vector to simplify modification of the function
+
+# grade<-function(x){
+#   x<-as.numeric(x)
+#   if (x>=35) {
+#     "A"} else { 
+#       if (x>=27 & x<=34) {
+#         "B"} else { 
+#           if (x>=20 & x<=26) {
+#             "C"} else { 
+#               if (x>=11 & x<=19) {
+#                 "D"} else {
+#                   if (x<=10) {
+#                     "F"}}
+#             }
+#         }
+#     }
+# }
+
+# updated 221121 to call on a curve defined in 'master' file
 grade<-function(x){
   x<-as.numeric(x)
-  if (x>=21) {
+  if (x>=gradecutoffs["A"]) {
     "A"} else { 
-      if (x>=15 & x<=20) {
+      if (x>=gradecutoffs["B"] & x<=gradecutoffs["A"]-1) {
         "B"} else { 
-          if (x>=10 & x<=14) {
+          if (x>=gradecutoffs["C"] & x<=gradecutoffs["B"]-1) {
             "C"} else { 
-              if (x>=6 & x<=9) {
+              if (x>=gradecutoffs["D"] & x<=gradecutoffs["C"]-1) {
                 "D"} else {
-                  if (x<=5) {
+                  if (x<=gradecutoffs["D"] ) {
                     "F"}}
             }
         }
@@ -192,6 +229,7 @@ grade<-function(x){
 
 
 progress_report<-dg
+#dg$date<-as.Date(paste("2020/",substr(dg$date, start = 1, stop = 2),"/",substr(dg$date, start = 3, stop = 4),sep=""),origin="2022-01-01")
 dg$date<-as.Date(paste("2020/",substr(dg$date, start = 1, stop = 2),"/",substr(dg$date, start = 3, stop = 4),sep=""))
 # the assignment IDs consist of a learning target ID (two characters) concatenated with a 
 # lowercase alpha to indicate a version of the assessment;
@@ -199,9 +237,11 @@ dg$date<-as.Date(paste("2020/",substr(dg$date, start = 1, stop = 2),"/",substr(d
 # learning targets.
 progress_report$assID<-gsub("a1","",progress_report$assID)
 progress_report$assID<-gsub("b1","",progress_report$assID)
-progress_report$assID<-gsub("[abc]","",progress_report$assID)
+progress_report$assID<-gsub("[abcde]","",progress_report$assID)
 # replace the 'E' with an 'S' for counting masteries - this is an after-the-face fix
-progress_report$grade<-gsub("E","S",progress_report$grade)
+
+# 5/24/2023
+# progress_report$grade<-gsub("E","S",progress_report$grade)
 
 # the data is pivoted so that it is organized by students and learning outcomes with best
 # grades listed in the table
@@ -225,17 +265,20 @@ mastery[is.na(mastery)]<-"Not attempted"
 counts<-data.frame(matrix(NA, nrow = 1, ncol = dim(mastery)[2]))
 colnames(counts)<-colnames(mastery)
 
+Ecounts<-summarise_each(mastery, funs(char.countE))
 Scounts<-summarise_each(mastery, funs(char.countS))
 Icounts<-summarise_each(mastery, funs(char.countU))
 Ncounts<-summarise_each(mastery, funs(char.countN))
+Ecounts[1]<-c("E")
 Scounts[1]<-c("S")
 Icounts[1]<-c("I")
 Ncounts[1]<-c("N")
-counts[1,]<-Scounts
-counts[2,]<-Icounts
-counts[3,]<-Ncounts
+counts[1,]<-Ecounts
+counts[2,]<-Scounts
+counts[3,]<-Icounts
+counts[4,]<-Ncounts
 counts[is.na(counts)]<-0
-rownames(counts)<-c("S_count","I_count","N_count")
+rownames(counts)<-c("E_count","S_count","I_count","N_count")
 
 # the counts dataframe contains counts of each type of mark the student earned
 
@@ -249,8 +292,10 @@ progress_calendar<-dg
 # learning targets.
 progress_calendar$assID<-gsub("a1","",progress_report$assID)
 progress_calendar$assID<-gsub("b1","",progress_report$assID)
-progress_calendar$assID<-gsub("[abc]","",progress_report$assID)
-progress_calendar$grade<-gsub("E","S",progress_report$grade)
+progress_calendar$assID<-gsub("[abcde]","",progress_report$assID)
+
+# 5/24/2023
+# progress_calendar$grade<-gsub("E","S",progress_report$grade)
 
 # PROBLEM: R is returning higher counts on the number of LTQs a student has matered.
 # Looking at
@@ -263,18 +308,24 @@ progress_calendar$grade<-gsub("E","S",progress_report$grade)
 # - dataframes whose entries are counts of 'S', one whose entries are counts 
 #   of 'U', and one whose entries are 'N'
 # - dataframes whose entries are cumulative counts of 'S', 'I', and 'N' respectively
+# ----- success attempts ----
 dprogressS<-as.data.frame(pivot_wider(progress_calendar,id_cols=date,names_from=lname,values_from=grade,values_fn=list(grade=char.countS)))
-dprogressS[is.na(dprogressS)]<-0
+dprogressS <- dprogressS[is.na(dprogressS$date)==FALSE,]
 dprogressS <- arrange(dprogressS,date)
 dcumprogressS<-cumulative.frame(dprogressS)
+# ---- exemplary work ----
+dprogressE<-as.data.frame(pivot_wider(progress_calendar,id_cols=date,names_from=lname,values_from=grade,values_fn=list(grade=char.countE)))
+dprogressE <- dprogressE[is.na(dprogressE$date)==FALSE,]
+dprogressE <- arrange(dprogressE,date)
+dcumprogressE<-cumulative.frame(dprogressE)
 # ---- unsuccessful attempts ----
 dprogressU<-as.data.frame(pivot_wider(progress_calendar,id_cols=date,names_from=lname,values_from=grade,values_fn=list(grade=char.countU)))
-dprogressU[is.na(dprogressU)]<-0
+dprogressU <- dprogressU[is.na(dprogressU$date)==FALSE,]
 dprogressU <- arrange(dprogressU,date)
 dcumprogressU<-cumulative.frame(dprogressU)
 # ---- 'no evidence' attempts ----
 dprogressN<-as.data.frame(pivot_wider(progress_calendar,id_cols=date,names_from=lname,values_from=grade,values_fn=list(grade=char.countN)))
-dprogressN[is.na(dprogressN)]<-0
+dprogressN <- dprogressN[is.na(dprogressN$date)==FALSE,]
 dprogressN <- arrange(dprogressN,date)
 dcumprogressN<-cumulative.frame(dprogressN)
 

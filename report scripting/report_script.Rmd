@@ -1,0 +1,130 @@
+---
+title: "Calculus I Grade Report for `r student`"
+#title: "Calculus I Last Grade Report for `r student`"
+#title: "Calculus I Last Grade Report for John Doe"
+author: "Jason E. Miller, Ph.D."
+graphics: yes
+output: 
+  tufte::tufte_handout:
+    keep_tex: true
+    keep_md: true
+header-includes:
+   - \usepackage{rotating, booktabs, xcolor}
+date: "`r Sys.Date()`"
+
+
+# from https://www.reed.edu/data-at-reed/software/R/markdown_multiple_reports.html
+# render with console command:  rmarkdown::render("report_script.Rmd")
+---
+
+```{r, echo=FALSE}
+suppressWarnings(suppressPackageStartupMessages(library(dplyr)))
+#suppressWarnings(suppressPackageStartupMessages(library(leaflet)))
+suppressWarnings(suppressPackageStartupMessages(library(DT)))
+suppressWarnings(suppressPackageStartupMessages(library(stringr)))
+library(knitr)
+library(markdown)
+library(rmarkdown)
+```
+
+```{r, echo=FALSE}
+#student<-"Pydde"
+# 'student' is passed from an R script
+# here we find the index (which we name 'stuno', student number) in the mastery table that corresponds to this student
+stuno<-grep(student, colnames(mastery))
+
+# WANT:  dictionary that takes student ID and maps it to student's first and last names for customization purposes, below
+```
+
+The main table in this report lists the learning targets that are available for assessment at this point in the semester.  Your goal is to provide evidence of your mastery of as many learning targets as possible by the end of the semester.  
+
+Those learning targets that you have not assessed yet are clearly indicated by a 'Not attempted'.  Next to those you have attempted is a symbol that indicates your level of mastery of that learning target.  These symbols mean
+
+\begin{center}
+\begin{tabular}{ccl}
+E & -- & Your work has provided extraordinary evidence of mastery \\
+&& of the learning target.  \\
+S & -- & Your work has provided satisfactory evidence of mastery \\
+&& of the learning target.  \\
+I & -- & Your work has provided insufficient evidence of mastery \\
+&& of the learning target.  You should study the topic some \\
+&&more and reassess.  \\
+N & -- & Your work has provided no evidence of mastery of the \\
+&&learning target.  You may not reassess the topic.  \\
+\end{tabular}
+\end{center}
+
+\medskip
+
+\noindent To date, this is my record of our learning targets and your assessments: 
+```{r table, echo=FALSE,R.options=knitr::opts_chunk$set(warning=FALSE, message=FALSE)}
+
+# want a two-column table
+ttlrows<-dim(mastery[,c(1,stuno)])[1]
+halfrows<-round(dim(mastery[,c(1,3)])[1]/2)
+restrows<-ttlrows-halfrows
+
+# need to select the column according to the 'student' passed to this script
+t1<-kable(mastery[1:halfrows,c(1,stuno)],row.names=FALSE, format = "latex", booktabs = TRUE)
+t2<-kable(mastery[(halfrows+1):ttlrows,c(1,stuno)],row.names=FALSE, format = "latex", booktabs = TRUE)
+
+MU<-length(dcumprogressU[,stuno])
+MS<-length(dcumprogressS[,stuno])
+# 221027: the 'counts' function isn't deinfed for some reason
+# attempts<-sum(counts[,stuno])
+# progress<-counts[1,stuno]
+attempts<-max(dcumprogressU[,stuno])
+progress<-max(dcumprogressS[,stuno])
+
+grade<-
+  if (progress>=gradecutoffs["A"]) {
+    "A"} else { 
+      if (progress>=gradecutoffs["B"]& progress<gradecutoffs["A"]) {
+        "B"} else { 
+      if (progress>=gradecutoffs["C"] & progress<gradecutoffs["B"]) {
+        "C"} else { 
+      if (progress>=10 & progress<gradecutoffs["C"]) {
+        "D"} else {
+      "F"}
+        }
+      }
+    }
+
+message<-if (grade=="F") {"\\textbf{This is insufficient for passing the course.}"} else {
+  paste("\\textbf{This meets the requirement of earning a", grade, "in the course.}",sep=" ")
+}
+
+```
+
+\begin{table}[!htb]
+\begin{minipage}{.5\linewidth}
+      \centering
+        {`r t1`}
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+        {`r t2`}
+        \end{minipage} 
+\end{table}
+
+You have taken `r attempts+progress` learning target quizzes and shown sufficient evidence of mastery on `r progress` different learning targets. `r message`
+
+On the next page you will see two graphs.  The top graph represents your progress over time in providing evidence that you are learning materials in our course Learning Targets.  Your progress is represented by the red curve.  The grey curves in the background represent the progress of your classmates.  The bottom graph represents your other efforts not accounted for in the first graph.  Your effort is represented by the yellow curve.  The grey curves in the background represent the efforts of your classmates.  The dashed horizontal lines represent minimum achievement for letter grades.
+```{r progressplot, echo=FALSE, include=FALSE}
+
+tmp_progress<-progress.plot(student)
+#tmp<-plot(1:3,3:1)
+tmp_attempts<-attempts.plot(student)
+```
+
+\begin{center}
+\includegraphics[width=6in]{`r tmp_progress`}
+
+\includegraphics[width=6in]{`r tmp_attempts`}
+\end{center}
+
+\noindent If you received this report in error, please delete it and notify Dr. Miller by email\footnote{\texttt{jason.miller@csuci.edu}} of the error.
+
+
+
+
